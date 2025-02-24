@@ -1,6 +1,7 @@
 ﻿using LibraryManagementSystem.API.Data;
 using LibraryManagementSystem.API.Models.Domain;
 using LibraryManagementSystem.API.Models.DTO;
+using LibraryManagementSystem.API.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,9 +13,12 @@ namespace LibraryManagementSystem.API.Controllers
     public class BooksController : ControllerBase
     {
         private readonly LMSDbContext dbContext;
-        public BooksController(LMSDbContext dbContext)
+        private readonly IBookRepository bookRepository;
+
+        public BooksController(LMSDbContext dbContext, IBookRepository bookRepository)
         {
             this.dbContext = dbContext;
+            this.bookRepository = bookRepository;
         }
 
 
@@ -24,7 +28,7 @@ namespace LibraryManagementSystem.API.Controllers
         public async Task<IActionResult> GetAll()
         {
             //Get Data From Database - Domain Models
-            var books = await dbContext.Books.ToListAsync();
+            var books = await bookRepository.GetAllAsync();
 
             //Map Domain Models to DTOs
             var bookDetailsDtos = new List<BookDetailsDto>();
@@ -51,7 +55,7 @@ namespace LibraryManagementSystem.API.Controllers
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
             //Get Data From Database - Domain Models
-            var book = await dbContext.Books.FindAsync(id);
+            var book = await bookRepository.GetByIdAsync(id);
 
             if(book == null)
             {
@@ -77,31 +81,38 @@ namespace LibraryManagementSystem.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] BookDto bookDto)
         {
-            // Map DTO to Domain Model
-            var book = new Book
+            if (ModelState.IsValid) 
             {
-                Title = bookDto.Title,
-                Author = bookDto.Author,
-                Description = bookDto.Description,
-                ImageUrl = bookDto.ImageUrl
-            };
+                // Map DTO to Domain Model
+                var book = new Book
+                {
+                    Title = bookDto.Title,
+                    Author = bookDto.Author,
+                    Description = bookDto.Description,
+                    ImageUrl = bookDto.ImageUrl
+                };
 
-            // Use Domain Model to Create a Book
-            await dbContext.Books.AddAsync(book);
-            await dbContext.SaveChangesAsync();
+                // Use Domain Model to Create a Book
+                book = await bookRepository.CreateAsync(book);
 
-            // Map Domain Model Back to DTO
-            var bookDetailsDto = new BookDetailsDto
+                // Map Domain Model Back to DTO
+                var bookDetailsDto = new BookDetailsDto
+                {
+                    Id = book.Id,
+                    Title = book.Title,
+                    Author = book.Author,
+                    Description = book.Description,
+                    ImageUrl = book.ImageUrl
+
+                };
+
+                return CreatedAtAction(nameof(GetById), new { id = book.Id }, bookDetailsDto);
+            }
+            else 
             {
-                Id = book.Id,
-                Title = book.Title,
-                Author = book.Author,
-                Description = book.Description,
-                ImageUrl = book.ImageUrl
-
-            };
-
-            return CreatedAtAction(nameof(GetById), new { id = book.Id},bookDetailsDto);
+                return BadRequest(ModelState);
+            }
+            
         }
 
         // UPDATE A BOOK
@@ -110,32 +121,41 @@ namespace LibraryManagementSystem.API.Controllers
         [Route("{id:int}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] BookDto bookDto)
         {
-            //Check if Book exists in Database
-            var book = await dbContext.Books.FindAsync(id);
-
-            if (book == null)
+            if (ModelState.IsValid) 
             {
-                return NotFound();
+                //Map DTO to Domain Model
+                var book = new Book
+                {
+                    Id = id,
+                    Title = bookDto.Title,
+                    Author = bookDto.Author,
+                    Description = bookDto.Description,
+                    ImageUrl = bookDto.ImageUrl
+                };
+                //Check if Book exists in Database
+                book = await bookRepository.UpdateAsync(id, book);
+
+                if (book == null)
+                {
+                    return NotFound();
+                }
+
+                //Return Domain Model to DTO
+                var bookDetailsDto = new BookDetailsDto
+                {
+                    Id = book.Id,
+                    Title = book.Title,
+                    Author = book.Author,
+                    Description = book.Description,
+                    ImageUrl = book.ImageUrl
+                };
+                return Ok(bookDetailsDto);
             }
-
-            //Map DTO to Domain Model
-            book.Title = bookDto.Title;
-            book.Author = bookDto.Author;
-            book.Description = bookDto.Description;
-            book.ImageUrl = bookDto.ImageUrl;
-
-            await dbContext.SaveChangesAsync();
-
-            //Return Domain Model to DTO
-            var bookDetailsDto = new BookDetailsDto
+            else
             {
-                Id = book.Id,
-                Title = book.Title,
-                Author = book.Author,
-                Description = book.Description,
-                ImageUrl = book.ImageUrl
-            };
-            return Ok(bookDetailsDto);
+                return BadRequest(ModelState);
+            }
+            
         }
 
         // DELETE A BOOK
@@ -145,15 +165,12 @@ namespace LibraryManagementSystem.API.Controllers
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             //Check if Book exists in Database
-            var book = await dbContext.Books.FindAsync(id);
+            var book = await bookRepository.DeleteAsync(id);
 
             if (book == null)
             {
                 return NotFound();
             }
-
-            dbContext.Books.Remove(book);
-            await dbContext.SaveChangesAsync();
 
             //Return Domain Model to DTO
             var bookDetailsDto = new BookDetailsDto

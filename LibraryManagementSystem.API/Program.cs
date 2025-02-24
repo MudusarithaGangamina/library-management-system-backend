@@ -1,4 +1,5 @@
 using LibraryManagementSystem.API.Data;
+using LibraryManagementSystem.API.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<LMSDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IBookRepository, SQLiteBookRepository>();
 
 builder.Services.AddCors(opt => {
     opt.AddPolicy("CorsPolicy", policyBuilder => {
