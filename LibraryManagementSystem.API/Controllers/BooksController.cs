@@ -2,6 +2,7 @@
 using LibraryManagementSystem.API.Models.Domain;
 using LibraryManagementSystem.API.Models.DTO;
 using LibraryManagementSystem.API.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ namespace LibraryManagementSystem.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class BooksController : ControllerBase
     {
         private readonly LMSDbContext dbContext;

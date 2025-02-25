@@ -5,7 +5,7 @@ namespace LibraryManagementSystem.API.Data
 {
     public class LMSDbContext: DbContext
     {
-        public LMSDbContext(DbContextOptions dbContextOptions) : base(dbContextOptions)
+        public LMSDbContext(DbContextOptions<LMSDbContext> dbContextOptions) : base(dbContextOptions)
         {
             
         }
