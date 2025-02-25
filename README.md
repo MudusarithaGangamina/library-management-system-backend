@@ -18,7 +18,8 @@ This is the backend for the Library Management System, built with **C# .NET and 
 ### 1️⃣ Clone the repository
 ```sh
 git clone https://github.com/MudusarithaGangamina/library-management-system-backend.git
-cd LibraryManagementSystem-Backend
+cd LibraryManagementSystem
+cd LibraryManagementSystem.API
 ```
 
 ### 2️⃣ Install dependencies
