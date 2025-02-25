@@ -78,4 +78,18 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var authContext = services.GetRequiredService<AuthDbContext>();
+    var lmsContext = services.GetRequiredService<LMSDbContext>();
+
+    authContext.Database.Migrate(); // Ensures AuthDb is created/migrated
+    lmsContext.Database.Migrate();  // Ensures LMSDb is created/migrated
+
+    await DataSeeder.SeedLMSData(lmsContext);
+}
+
+
 app.Run();

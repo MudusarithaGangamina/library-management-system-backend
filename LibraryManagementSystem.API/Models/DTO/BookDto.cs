@@ -12,7 +12,6 @@ namespace LibraryManagementSystem.API.Models.DTO
         public string Author { get; set; }
 
         [Required]
-        [MaxLength(200, ErrorMessage = "Description cannot be higher than 200 characters.")]
         public string Description { get; set; }
 
         public string? ImageUrl { get; set; }

@@ -12,24 +12,6 @@ namespace LibraryManagementSystem.API.Data
 
         public DbSet<Book> Books { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<Book>().HasData(
-                new Book
-                {
-                    Id = 1,
-                    Title = "Cricket",
-                    Author = "Kusal Mendis",
-                    Description = "Cricket is Life"
-                },
-                new Book
-                {
-                    Id = 2,
-                    Title = "Football",
-                    Author = "Lionel Messi",
-                    Description = "Football is Life"
-                }
-            );
-        }
+        
     }
 }
