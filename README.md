@@ -29,8 +29,8 @@ dotnet restore
 
 ### 3️⃣ Apply database migrations
 ```sh
-dotnet ef database update --context AuthDbContext
-dotnet ef database update --context LMSDbContext
+dotnet ef migrations add AuthInit --context AuthDbContext
+dotnet ef migrations add LMSInit --context LMSDbContext
 ```
 
 ### 4️⃣ Run the backend
